@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>車險簡訊</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            background-color: #F2F2F7;
+            /* iOS System Gray 6 */
+            color: #1C1C1E;
+        }
+
+        .ios-card {
+            background-color: #FFFFFF;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ios-input {
+            appearance: none;
+            border: none;
+            background-color: #FFFFFF;
+            padding: 14px 18px;
+            width: 100%;
+            font-size: 17px;
+            border-bottom: 0.5px solid #E5E5EA;
+            transition: background-color 0.2s;
+        }
+
+        .ios-input:active {
+            background-color: #F2F2F7;
+        }
+
+        .ios-input:last-child {
+            border-bottom: none;
+        }
+
+        .ios-input:focus {
+            outline: none;
+        }
+
+        .ios-button {
+            background: linear-gradient(180deg, #007AFF 0%, #0063D1 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 14px;
+            font-weight: 600;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ios-button:active {
+            transform: scale(0.97);
+            opacity: 0.9;
+            box-shadow: 0 2px 6px rgba(0, 122, 255, 0.2);
+        }
+
+        .ios-button-secondary {
+            color: #FF3B30;
+            background-color: transparent;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        .ios-button-secondary:active {
+            opacity: 0.5;
+        }
+
+        .glass-mask {
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+
+        .premium-bg {
+            background: radial-gradient(circle at top right, rgba(0, 122, 255, 0.05), transparent),
+                radial-gradient(circle at bottom left, rgba(255, 59, 48, 0.03), transparent);
+        }
+
+        input,
+        textarea,
+        select {
+            font-size: 16px !important;
+        }
+
+        .tab-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0%;
+            }
+
+            50% {
+                top: 100%;
+            }
+
+            100% {
+                top: 0%;
+            }
+        }
+
+        .animate-scan {
+            animation: scan 2s linear infinite;
+        }
+
+        #login-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #F2F2F7;
+        }
+
+        .login-card {
+            width: 90%;
+            max-width: 320px;
+            text-align: center;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .pass-dot-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .pass-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 1.5px solid #007AFF;
+            transition: all 0.2s;
+        }
+
+        .pass-dot.filled {
+            background-color: #007AFF;
+        }
+    </style>
+</head>
+
+<body class="safe-area-inset premium-bg">
+
+    <!-- Password Lock Screen -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <div class="mb-8">
+                <div class="w-20 h-20 bg-blue-500 rounded-3xl mx-auto flex items-center justify-center shadow-lg mb-4">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                        </path>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-900">車險簡訊工具</h1>
+                <p class="text-gray-500 mt-2 text-sm">請輸入存取密碼以繼續</p>
+            </div>
+
+            <div class="relative space-y-4">
+                <input type="password" id="access-code" placeholder="輸入密碼"
+                    class="ios-input rounded-xl border-none shadow-sm text-center tracking-[0.5em] text-2xl font-bold focus:ring-2 focus:ring-blue-500/20"
+                    maxlength="8" autocomplete="off">
+                <button onclick="validateAccess()" class="w-full ios-button">解鎖進入</button>
+            </div>
+
+            <p id="login-error" class="text-red-500 text-xs mt-4 opacity-0 transition-opacity">密碼錯誤，請重新輸入</p>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="main-content" class="min-h-screen opacity-0 transition-opacity duration-700 pointer-events-none">
+
+        <!-- Header -->
+        <header class="sticky top-0 z-10 px-4 pt-8 pb-4 bg-[#F2F2F7]/80 backdrop-blur-md border-b border-gray-200">
+            <div class="flex justify-between items-end max-w-lg mx-auto">
+                <h2 class="text-3xl font-bold text-gray-900 tracking-tight">車險簡訊</h2>
+                <button onclick="destroyData()" class="ios-button-secondary text-sm font-semibold pb-1">清除</button>
+            </div>
+        </header>
+
+        <!-- Main Form -->
+        <main class="p-4 space-y-6 max-w-lg mx-auto">
+
+            <!-- Segmented Control (Tabs) -->
+            <div class="flex bg-gray-200/50 rounded-xl p-1 backdrop-blur-sm">
+                <button id="tab-insurance" onclick="switchTab('insurance')"
+                    class="tab-btn flex-1 py-1.5 text-sm font-semibold bg-white rounded-lg shadow-sm text-blue-600">車險續保</button>
+                <button id="tab-account" onclick="switchTab('account')"
+                    class="tab-btn flex-1 py-1.5 text-sm font-semibold text-gray-500">帳戶資訊</button>
+            </div>
+
+            <!-- Input Group -->
+            <div class="ios-card overflow-hidden">
+                <div class="flex flex-col">
+                    <div
+                        class="flex items-center px-4 pt-4 pb-2 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                        輸入資訊</div>
+
+                    <input type="text" id="cust-name" placeholder="客戶姓名" class="ios-input">
+                    <input type="text" id="car-plate" placeholder="車牌號碼" class="ios-input">
+
+                    <div id="dynamic-field-container">
+                        <input type="number" id="premium" placeholder="應繳保費" class="ios-input">
+                        <input type="password" id="account-pass" placeholder="登入密碼" class="ios-input hidden">
+                    </div>
+
+                    <div class="relative">
+                        <input type="text" id="link-url" placeholder="繳費連結" class="ios-input pr-14">
+                        <button onclick="startScanner()"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 p-3 text-blue-500 active:scale-95 transition-transform">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                </path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <button onclick="generateText()" class="w-full ios-button mt-4">產出格式文字</button>
+
+            <!-- Result Area -->
+            <div id="result-container" class="mt-8 hidden animate-fade-in">
+                <div class="flex items-center px-4 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                    產出結果</div>
+                <div class="ios-card p-5">
+                    <textarea id="result-text" readonly
+                        class="w-full bg-transparent border-none focus:outline-none text-gray-700 resize-none font-sans text-[16px] leading-relaxed"
+                        rows="5"></textarea>
+                    <button onclick="copyToClipboard()"
+                        class="w-full mt-4 py-3 text-blue-600 font-bold text-center border-t border-gray-100 active:bg-gray-50 transition-colors">複製文字並發送</button>
+                </div>
+            </div>
+
+        </main>
+
+        <footer class="p-12 text-center text-[10px] text-gray-400 uppercase tracking-[0.2em] font-bold">
+            Secure client-side only tool
+        </footer>
+    </div>
+
+    <!-- Live QR Scanner Overlay 調整焦距 -->
+    <div id="scanner-overlay"
+        class="fixed inset-0 z-[100] hidden bg-black flex flex-col items-center justify-center overflow-hidden">
+        <video id="scanner-video" class="w-full h-full object-cover transition-transform duration-500"
+            style="transform: scale(2.0); transform-origin: center;" playsinline></video>
+
+        <!-- Top Close Button -->
+        <button onclick="stopScanner()"
+            class="absolute top-12 right-6 z-[110] p-2 bg-black/40 backdrop-blur-md rounded-full text-white active:scale-95 transition-transform">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <!-- Scanner HUD -->
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <!-- Viewfinder -->
+            <div
+                class="relative w-64 h-64 border-2 border-white/30 rounded-3xl overflow-hidden shadow-[0_0_0_9999px_rgba(0,0,0,0.6)]">
+                <!-- Corner Indicators -->
+
+                <!-- Corner Indicators -->
+                <div class="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-blue-500 rounded-tl-lg"></div>
+                <div class="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-blue-500 rounded-tr-lg"></div>
+                <div class="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-blue-500 rounded-bl-lg"></div>
+                <div class="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-blue-500 rounded-br-lg">
+                </div>
+            </div>
+
+            <p class="mt-12 text-white text-lg font-medium tracking-wide">將 QR Code 對準框內</p>
+
+            <button onclick="stopScanner()"
+                class="mt-20 px-8 py-3 bg-white/20 backdrop-blur-md rounded-full text-white font-semibold border border-white/30 active:scale-95 transition-transform">
+                取消掃描
+            </button>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast"
+        class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-gray-900/95 text-white px-8 py-3 rounded-2xl text-sm font-semibold opacity-0 transition-all duration-300 pointer-events-none z-[60] shadow-2xl">
+        已成功複製到剪貼簿
+    </div>
+
+    <!-- Hidden Elements for Processing -->
+    <canvas id="qr-canvas" class="hidden"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
+    <script>
+        let activeTab = 'insurance';
+        let scanning = false;
+        let videoStream = null;
+
+        const video = document.getElementById('scanner-video');
+        const scannerOverlay = document.getElementById('scanner-overlay');
+        const qrCanvas = document.getElementById('qr-canvas');
+        const linkInputField = document.getElementById('link-url');
+        const toast = document.getElementById('toast');
+        const resultContainer = document.getElementById('result-container');
+        const resultTextArea = document.getElementById('result-text');
+
+        // --- SHA-256 Password Layer Logic ---
+        const EXPECTED_HASH = "9AF15B336E6A9619928537DF30B2E6A2376569FCF9D7E773ECCEDE65606529A0"; // 密碼 6666 的雜湊值
+
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function validateAccess() {
+            const input = document.getElementById('access-code');
+            const errorHint = document.getElementById('login-error');
+            const hash = await sha256(input.value);
+
+            // 轉為小寫後再比對，避免大小寫不一致導致失敗
+            if (hash.toLowerCase() === EXPECTED_HASH.toLowerCase()) {
+                // 解鎖成功
+                sessionStorage.setItem('unlocked', 'true');
+                showMainContent();
+            } else {
+                // 解鎖失敗
+                input.value = '';
+                errorHint.style.opacity = '1';
+                input.classList.add('animate-shake');
+                setTimeout(() => errorHint.style.opacity = '0', 2000);
+            }
+        }
+
+        function showMainContent() {
+            document.getElementById('login-overlay').style.display = 'none';
+            const mc = document.getElementById('main-content');
+            mc.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        // 頁面載入檢查 Session
+        window.addEventListener('load', () => {
+            if (sessionStorage.getItem('unlocked') === 'true') {
+                showMainContent();
+            }
+
+            // 監聽 Enter 鍵解鎖
+            document.getElementById('access-code').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') validateAccess();
+            });
+        });
+
+        function switchTab(tab) {
+            activeTab = tab;
+            const tabInsurance = document.getElementById('tab-insurance');
+            const tabAccount = document.getElementById('tab-account');
+            const premiumField = document.getElementById('premium');
+            const accountPassField = document.getElementById('account-pass');
+
+            [tabInsurance, tabAccount].forEach(btn => {
+                btn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600');
+                btn.classList.add('text-gray-500');
+            });
+
+            if (tab === 'insurance') {
+                tabInsurance.classList.add('bg-white', 'shadow-sm', 'text-blue-600');
+                tabInsurance.classList.remove('text-gray-500');
+                premiumField.classList.remove('hidden');
+                accountPassField.classList.add('hidden');
+                linkInputField.placeholder = '繳費連結';
+            } else {
+                tabAccount.classList.add('bg-white', 'shadow-sm', 'text-blue-600');
+                tabAccount.classList.remove('text-gray-500');
+                premiumField.classList.add('hidden');
+                accountPassField.classList.remove('hidden');
+                linkInputField.placeholder = '相關連結';
+            }
+            resultContainer.classList.add('hidden');
+        }
+
+        async function startScanner() {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: "environment",
+                        width: { ideal: 4096 }, // 優先請求高解析度 (4K/1080p)
+                        height: { ideal: 2160 }
+                    }
+                });
+                video.srcObject = videoStream;
+                video.setAttribute("playsinline", true);
+                video.play();
+
+                scanning = true;
+                scannerOverlay.classList.remove('hidden');
+                requestAnimationFrame(tick);
+            } catch (err) {
+                console.error("Camera access error:", err);
+                showToast('無法開啟攝影機，請檢查權限');
+            }
+        }
+
+        function stopScanner() {
+            scanning = false;
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            video.srcObject = null;
+            scannerOverlay.classList.add('hidden');
+        }
+
+        function tick() {
+            if (!scanning) return;
+
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                const canvas = qrCanvas;
+                const context = canvas.getContext('2d', { willReadFrequently: true });
+
+                // 優化：提升運算解析度上限 (由 640 提升至 1280)
+                const scale = Math.min(1, 1280 / Math.max(video.videoWidth, video.videoHeight));
+                canvas.width = video.videoWidth * scale;
+                canvas.height = video.videoHeight * scale;
+
+                // 數位變焦 (2.0x)：只取中間區域進行繪製，增加 QR Code 在畫面中的佔比
+                const zoomFactor = 2.0;
+                const sw = video.videoWidth / zoomFactor;
+                const sh = video.videoHeight / zoomFactor;
+                const sx = (video.videoWidth - sw) / 2;
+                const sy = (video.videoHeight - sh) / 2;
+
+                context.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+                // --- QR 模式 ---
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: "dontInvert",
+                });
+
+                if (code && code.data) {
+                    linkInputField.value = code.data;
+                    linkInputField.dispatchEvent(new Event('input', { bubbles: true }));
+
+                    showToast('成功讀取 QR Code！');
+                    stopScanner();
+                    return;
+                }
+            }
+            requestAnimationFrame(tick);
+        }
+
+
+        function generateText() {
+            const name = document.getElementById('cust-name').value;
+            const plate = document.getElementById('car-plate').value;
+            const premium = document.getElementById('premium').value;
+            const pass = document.getElementById('account-pass').value;
+            const link = document.getElementById('link-url').value;
+
+            if (!name || !plate) {
+                showToast('請輸入姓名與車牌');
+                return;
+            }
+
+            let text = "";
+            if (activeTab === 'insurance') {
+                text = `👇${name}${plate}\n保費：${premium}元\n繳費網址 ${link}`;
+            } else {
+                text = `${name}${plate}保單\n密碼：${pass}\n${link}`;
+            }
+
+            resultTextArea.value = text;
+            resultContainer.classList.remove('hidden');
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function copyToClipboard() {
+            const text = resultTextArea.value;
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast('已複製！即將跳轉 LINE...');
+
+                // 跳轉至 LINE 並帶入文字
+                setTimeout(() => {
+                    window.location.href = `https://line.me/R/msg/text/?${encodeURIComponent(text)}`;
+                }, 500);
+            } catch (err) {
+                showToast('複製失敗');
+            }
+        }
+
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.style.opacity = '1';
+            toast.style.transform = 'translate(-50%, -10px)';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translate(-50%, 0)';
+            }, 2500);
+        }
+
+        function destroyData() {
+            if (confirm('確定要銷毀所有資料嗎？')) {
+                const inputs = document.querySelectorAll('input, textarea');
+                inputs.forEach(input => input.value = '');
+                resultContainer.classList.add('hidden');
+                showToast('暫存資料已銷毀');
+            }
+        }
+    </script>
+</body>
+
+</html>
