@@ -189,6 +189,10 @@
                 <input type="password" id="access-code" placeholder="輸入密碼"
                     class="ios-input rounded-xl border-none shadow-sm text-center tracking-[0.5em] text-2xl font-bold focus:ring-2 focus:ring-blue-500/20"
                     maxlength="8" autocomplete="off">
+                <div class="flex items-center justify-center gap-2 py-1">
+                    <input type="checkbox" id="remember-me" class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <label for="remember-me" class="text-xs text-gray-500 font-medium cursor-pointer">記住此裝置 1 小時</label>
+                </div>
                 <button onclick="validateAccess()" class="w-full ios-button">解鎖進入</button>
             </div>
 
@@ -203,7 +207,10 @@
         <header class="sticky top-0 z-10 px-4 pt-8 pb-4 bg-[#F2F2F7]/80 backdrop-blur-md border-b border-gray-200">
             <div class="flex justify-between items-end max-w-lg mx-auto">
                 <h2 class="text-3xl font-bold text-gray-900 tracking-tight">車險簡訊</h2>
-                <button onclick="destroyData()" class="ios-button-secondary text-sm font-semibold pb-1">清除</button>
+                <div class="flex gap-4">
+                    <button onclick="handleLogout()" class="ios-button-secondary text-sm font-semibold pb-1">登出</button>
+                    <button onclick="destroyData()" class="ios-button-secondary text-sm font-semibold pb-1">清除</button>
+                </div>
             </div>
         </header>
 
@@ -345,6 +352,8 @@
 
         // --- SHA-256 Password Layer Logic ---
         const EXPECTED_HASH = "9AF15B336E6A9619928537DF30B2E6A2376569FCF9D7E773ECCEDE65606529A0"; // 密碼 6666 的雜湊值
+        const AUTH_KEY = 'itools_auth_expiry';
+        const EXPIRY_DURATION = 1 * 60 * 60 * 1000; // 1小時
 
         async function sha256(message) {
             const msgBuffer = new TextEncoder().encode(message);
@@ -356,19 +365,36 @@
         async function validateAccess() {
             const input = document.getElementById('access-code');
             const errorHint = document.getElementById('login-error');
+            const rememberMe = document.getElementById('remember-me').checked;
             const hash = await sha256(input.value);
 
-            // 轉為小寫後再比對，避免大小寫不一致導致失敗
             if (hash.toLowerCase() === EXPECTED_HASH.toLowerCase()) {
-                // 解鎖成功
+                if (rememberMe) {
+                    localStorage.setItem(AUTH_KEY, Date.now() + EXPIRY_DURATION);
+                }
                 sessionStorage.setItem('unlocked', 'true');
                 showMainContent();
             } else {
-                // 解鎖失敗
                 input.value = '';
                 errorHint.style.opacity = '1';
-                input.classList.add('animate-shake');
                 setTimeout(() => errorHint.style.opacity = '0', 2000);
+            }
+        }
+
+        function checkPersistentLogin() {
+            const expiry = localStorage.getItem(AUTH_KEY);
+            if (expiry && Date.now() < parseInt(expiry)) {
+                showMainContent();
+                return true;
+            }
+            return false;
+        }
+
+        function handleLogout() {
+            if (confirm("是否登出並清除記住狀態？")) {
+                localStorage.removeItem(AUTH_KEY);
+                sessionStorage.removeItem('unlocked');
+                location.reload();
             }
         }
 
@@ -400,6 +426,9 @@
         window.addEventListener('load', () => {
             processUrlParams();
 
+            // 優先檢查持久登入
+            if (checkPersistentLogin()) return;
+
             if (sessionStorage.getItem('unlocked') === 'true') {
                 showMainContent();
             }
@@ -408,6 +437,9 @@
             document.getElementById('access-code').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') validateAccess();
             });
+            
+            // 自動聚焦
+            setTimeout(() => document.getElementById('access-code').focus(), 500);
         });
 
         function switchTab(tab) {
