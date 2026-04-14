@@ -130,87 +130,19 @@
             animation: scan 2s linear infinite;
         }
 
-        #login-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 200;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #F2F2F7;
-        }
-
-        .login-card {
-            width: 90%;
-            max-width: 320px;
-            text-align: center;
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        .pass-dot-container {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 30px 0;
-        }
-
-        .pass-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            border: 1.5px solid #007AFF;
-            transition: all 0.2s;
-        }
-
-        .pass-dot.filled {
-            background-color: #007AFF;
-        }
     </style>
 </head>
 
 <body class="safe-area-inset premium-bg">
 
-    <!-- Password Lock Screen -->
-    <div id="login-overlay">
-        <div class="login-card">
-            <div class="mb-8">
-                <div class="w-20 h-20 bg-blue-500 rounded-3xl mx-auto flex items-center justify-center shadow-lg mb-4">
-                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
-                        </path>
-                    </svg>
-                </div>
-                <h1 class="text-2xl font-bold text-gray-900">車險簡訊工具</h1>
-                <p class="text-gray-500 mt-2 text-sm">請輸入存取密碼以繼續</p>
-            </div>
-
-            <div class="relative space-y-4">
-                <input type="password" id="access-code" placeholder="輸入密碼"
-                    class="ios-input rounded-xl border-none shadow-sm text-center tracking-[0.5em] text-2xl font-bold focus:ring-2 focus:ring-blue-500/20"
-                    maxlength="8" autocomplete="off">
-                <div class="flex items-center justify-center gap-2 py-1">
-                    <input type="checkbox" id="remember-me" class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                    <label for="remember-me" class="text-xs text-gray-500 font-medium cursor-pointer">記住此裝置 1 小時</label>
-                </div>
-                <button onclick="validateAccess()" class="w-full ios-button">解鎖進入</button>
-            </div>
-
-            <p id="login-error" class="text-red-500 text-xs mt-4 opacity-0 transition-opacity">密碼錯誤，請重新輸入</p>
-        </div>
-    </div>
-
     <!-- Main Container -->
-    <div id="main-content" class="min-h-screen opacity-0 transition-opacity duration-700 pointer-events-none">
+    <div id="main-content" class="min-h-screen">
 
         <!-- Header -->
         <header class="sticky top-0 z-10 px-4 pt-8 pb-4 bg-[#F2F2F7]/80 backdrop-blur-md border-b border-gray-200">
             <div class="flex justify-between items-end max-w-lg mx-auto">
                 <h2 class="text-3xl font-bold text-gray-900 tracking-tight">車險簡訊</h2>
-                <div class="flex gap-4">
-                    <button onclick="handleLogout()" class="ios-button-secondary text-sm font-semibold pb-1">登出</button>
-                    <button onclick="destroyData()" class="ios-button-secondary text-sm font-semibold pb-1">清除</button>
-                </div>
+                <button onclick="destroyData()" class="ios-button-secondary text-sm font-semibold pb-1">清除</button>
             </div>
         </header>
 
@@ -347,62 +279,7 @@
         const qrCanvas = document.getElementById('qr-canvas');
         const linkInputField = document.getElementById('link-url');
         const toast = document.getElementById('toast');
-        const resultContainer = document.getElementById('result-container');
-        const resultTextArea = document.getElementById('result-text');
 
-        // --- SHA-256 Password Layer Logic ---
-        const EXPECTED_HASH = "9AF15B336E6A9619928537DF30B2E6A2376569FCF9D7E773ECCEDE65606529A0"; // 密碼 6666 的雜湊值
-        const AUTH_KEY = 'itools_auth_expiry';
-        const EXPIRY_DURATION = 1 * 60 * 60 * 1000; // 1小時
-
-        async function sha256(message) {
-            const msgBuffer = new TextEncoder().encode(message);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        async function validateAccess() {
-            const input = document.getElementById('access-code');
-            const errorHint = document.getElementById('login-error');
-            const rememberMe = document.getElementById('remember-me').checked;
-            const hash = await sha256(input.value);
-
-            if (hash.toLowerCase() === EXPECTED_HASH.toLowerCase()) {
-                if (rememberMe) {
-                    localStorage.setItem(AUTH_KEY, Date.now() + EXPIRY_DURATION);
-                }
-                sessionStorage.setItem('unlocked', 'true');
-                showMainContent();
-            } else {
-                input.value = '';
-                errorHint.style.opacity = '1';
-                setTimeout(() => errorHint.style.opacity = '0', 2000);
-            }
-        }
-
-        function checkPersistentLogin() {
-            const expiry = localStorage.getItem(AUTH_KEY);
-            if (expiry && Date.now() < parseInt(expiry)) {
-                showMainContent();
-                return true;
-            }
-            return false;
-        }
-
-        function handleLogout() {
-            if (confirm("是否登出並清除記住狀態？")) {
-                localStorage.removeItem(AUTH_KEY);
-                sessionStorage.removeItem('unlocked');
-                location.reload();
-            }
-        }
-
-        function showMainContent() {
-            document.getElementById('login-overlay').style.display = 'none';
-            const mc = document.getElementById('main-content');
-            mc.classList.remove('opacity-0', 'pointer-events-none');
-        }
 
         function processUrlParams() {
             const params = new URLSearchParams(window.location.search);
@@ -422,24 +299,8 @@
             if (pass) switchTab('account');
         }
 
-        // 頁面載入檢查 Session
         window.addEventListener('load', () => {
             processUrlParams();
-
-            // 優先檢查持久登入
-            if (checkPersistentLogin()) return;
-
-            if (sessionStorage.getItem('unlocked') === 'true') {
-                showMainContent();
-            }
-
-            // 監聽 Enter 鍵解鎖
-            document.getElementById('access-code').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') validateAccess();
-            });
-            
-            // 自動聚焦
-            setTimeout(() => document.getElementById('access-code').focus(), 500);
         });
 
         function switchTab(tab) {
