@@ -330,7 +330,9 @@
                 accountPassField.classList.remove('hidden');
                 linkInputField.placeholder = '相關連結';
             }
-            resultContainer.classList.add('hidden');
+            
+            const res = document.getElementById('result-container');
+            if (res) res.classList.add('hidden');
         }
 
         async function startScanner() {
@@ -426,39 +428,52 @@
 
 
         function generateText() {
-            const name = document.getElementById('cust-name').value;
-            const plate = document.getElementById('car-plate').value;
-            const premium = document.getElementById('premium').value;
-            const pass = document.getElementById('account-pass').value;
-            const link = document.getElementById('link-url').value;
+            try {
+                const name = document.getElementById('cust-name').value;
+                const plate = document.getElementById('car-plate').value;
+                const premium = document.getElementById('premium').value;
+                const pass = document.getElementById('account-pass').value;
+                const link = document.getElementById('link-url').value;
 
-            if (!name || !plate) {
-                showToast('請輸入姓名與車牌');
-                return;
+                const resContainer = document.getElementById('result-container');
+                const resTextArea = document.getElementById('result-text');
+
+                if (!name || !plate) {
+                    showToast('請輸入姓名與車牌');
+                    return;
+                }
+
+                let text = "";
+                if (activeTab === 'insurance') {
+                    text = `👇${name}${plate}\n保費：${premium}元\n繳費網址 ${link}`;
+                } else {
+                    text = `${name}${plate}保單\n密碼：${pass}\n${link}`;
+                }
+
+                if (resTextArea) resTextArea.value = text;
+                if (resContainer) {
+                    resContainer.classList.remove('hidden');
+                    resContainer.scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (e) {
+                alert('產出文字出錯: ' + e.message);
             }
-
-            let text = "";
-            if (activeTab === 'insurance') {
-                text = `👇${name}${plate}\n保費：${premium}元\n繳費網址 ${link}`;
-            } else {
-                text = `${name}${plate}保單\n密碼：${pass}\n${link}`;
-            }
-
-            resultTextArea.value = text;
-            resultContainer.classList.remove('hidden');
-            resultContainer.scrollIntoView({ behavior: 'smooth' });
         }
 
         async function copyToClipboard() {
-            const text = resultTextArea.value;
             try {
+                const resTextArea = document.getElementById('result-text');
+                const text = resTextArea ? resTextArea.value : "";
+                
                 // 優化：優先嘗試原生 API
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     await navigator.clipboard.writeText(text);
                 } else {
                     // 備用：傳統選取複製方式 (用於舊款 Webview)
-                    resultTextArea.select();
-                    document.execCommand('copy');
+                    if (resTextArea) {
+                        resTextArea.select();
+                        document.execCommand('copy');
+                    }
                 }
                 
                 showToast('已複製！即將跳轉 LINE...');
